@@ -18,7 +18,7 @@ __author__ = 'Anton Romanovich'
 __license__ = 'BSD'
 __copyright__ = 'Copyright 2017 Anton Romanovich'
 __version__ = '0.1.3fs'
-__version_info__ = tuple(int(i) for i in __version__.split('.'))
+__version_info__ = (0, 1, 3)
 
 
 from .config import Config
