@@ -27,10 +27,11 @@ class Macro(object):
 
         The same as :attr:`args`, but keyword arguments.
     """
-    def __init__(self, name, args, kwargs):
+    def __init__(self, name, args, kwargs, allow_variable_kwargs=False):
         self.name = name
         self.args = args
         self.kwargs = kwargs
+        self.allow_variable_kwargs = allow_variable_kwargs
 
 
 class MacroCall(object):
@@ -51,6 +52,7 @@ class MacroCall(object):
 
         self.expected_args = macro.args[:]
         self.expected_kwargs = macro.kwargs[:]
+        self.allow_variable_kwargs = macro.allow_variable_kwargs
 
     def _match_passed_args(self, to_args):
         rv = Dictionary()
@@ -68,17 +70,28 @@ class MacroCall(object):
     def match_passed_args_to_expected_kwargs(self):
         return self._match_passed_args(self.expected_kwargs)
 
+    def _process_kwargs(self, rv, kwarg_name, kwarg_ast, kwarg_type, expected_arg_struct=None):
+        struct = kwarg_type
+        if expected_arg_struct:
+            struct = merge(kwarg_type, expected_arg_struct)
+        _, s = visit_expr(kwarg_ast.value,
+                          Context(predicted_struct=struct),
+                          config=self.config)
+        rv = merge(rv, s)
+        del self.passed_kwargs[kwarg_name]
+        return rv
+
     def _match_passed_kwargs(self, to_args):
         rv = Dictionary()
         for kwarg_name, (kwarg_ast, kwarg_type) in list(_compat.iteritems(self.passed_kwargs)):
+            if self.allow_variable_kwargs:
+                rv = self._process_kwargs(rv, kwarg_name, kwarg_ast, kwarg_type)
+
             for (expected_arg_name, expected_arg_struct) in list(to_args):
                 if kwarg_name == expected_arg_name:
-                    _, s = visit_expr(kwarg_ast.value,
-                                      Context(predicted_struct=merge(kwarg_type, expected_arg_struct)),
-                                      config=self.config)
-                    rv = merge(rv, s)
+                    self._process_kwargs(rv, kwarg_name, kwarg_ast, kwarg_type, expected_arg_struct)
                     to_args.remove((expected_arg_name, expected_arg_struct))
-                    del self.passed_kwargs[kwarg_name]
+
         return rv
 
     def match_passed_kwargs_to_expected_args(self):

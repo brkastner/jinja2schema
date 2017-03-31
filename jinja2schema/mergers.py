@@ -62,6 +62,12 @@ def merge(fst, snd, custom_merger=None):
                 raise MergeException(fst, snd)
             result = Tuple([merge(a, b, custom_merger=custom_merger)
                             for a, b in zip_longest(fst.items, snd.items, fillvalue=Unknown())])
+    elif isinstance(fst, Scalar) and isinstance(snd, Dictionary):
+        result = snd.clone()
+        result['__repr__'] = fst.clone()
+    elif isinstance(fst, Dictionary) and isinstance(snd, Scalar):
+        result = fst.clone()
+        result['__repr__'] = snd.clone()
     else:
         raise MergeException(fst, snd)
     result.label = fst.label or snd.label
