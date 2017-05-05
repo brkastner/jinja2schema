@@ -431,10 +431,19 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
 @visits_expr(nodes.Filter)
 def visit_filter(ast, ctx, macroses=None, config=default_config):
     return_struct_cls = None
-    if ast.name in ('abs', 'striptags', 'capitalize', 'center', 'escape', 'filesizeformat',
-                    'float', 'forceescape', 'format', 'indent', 'int', 'replace', 'round',
-                    'safe', 'string', 'striptags', 'title', 'trim', 'truncate', 'upper',
-                    'urlencode', 'urlize', 'wordcount', 'wordwrap', 'e'):
+    if ast.name in ('date', 'time', 'reply_quote', 'addslashes', 'capfirst', 'escapejs_filter', 'floatformat',
+                    'iriencode', 'linenumbers', 'lower', 'make_list', 'slugify', 'title', 'truncatechars',
+                    'truncatechars_html', 'truncatewords', 'truncatewords_html', 'upper', 'urlencode', 'urlize',
+                    'urlizetrunc', 'wordcount', 'wordwrap', 'ljust', 'rjust', 'center', 'cut', 'escape_filter',
+                    'force_escape', 'linebreaks', 'linebreaksbr', 'safe', 'safeseq', 'removetags', 'striptags',
+                    'timesince', 'timeuntil'):
+        # Add support for additional filters (custom and all string-type filters from Django (added w/ django_jinja))
+        node_struct = String.from_ast(ast.node)
+        return_struct_cls = String
+    elif ast.name in ('abs', 'striptags', 'capitalize', 'center', 'escape', 'filesizeformat',
+                      'float', 'forceescape', 'format', 'indent', 'int', 'replace', 'round',
+                      'safe', 'string', 'striptags', 'title', 'trim', 'truncate', 'upper',
+                      'urlencode', 'urlize', 'wordcount', 'wordwrap', 'e'):
         ctx.meet(Scalar(), ast)
         if ast.name in ('abs', 'round'):
             node_struct = Number.from_ast(ast.node, order_nr=config.ORDER_OBJECT.get_next())

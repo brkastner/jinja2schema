@@ -17,7 +17,7 @@ __title__ = 'jinja2schema'
 __author__ = 'Anton Romanovich'
 __license__ = 'BSD'
 __copyright__ = 'Copyright 2017 Anton Romanovich'
-__version__ = '0.1.4'
+__version__ = '0.1.4fs'
 __version_info__ = (0, 1, 4)
 
 
